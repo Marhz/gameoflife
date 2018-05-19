@@ -48,8 +48,6 @@
         tilesInY = Math.floor(canvas.height / tileSize.height);
         for(let x = 0; x < tilesInX; x++) {
             for (let y = 0; y < tilesInY; y++) {
-                // ctx.rect(x * tileSize.width, y * tileSize.height, tileSize.width, tileSize.height);   
-                // ctx.stroke();
                 tmp[x+'-'+y] = {
                     status: 'DEAD',
                     posX: x * tileSize.width,
