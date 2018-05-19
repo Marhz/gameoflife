@@ -15,29 +15,24 @@
     canvas.width = 1200;
     canvas.height = 800;
     const ctx = canvas.getContext('2d');
-    
     const drawGrid = (ctx, tileSize) => {
         ctx.strokeStyle = 'black';
         ctx.fillStyle = "white";
 
-        var data = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        let data = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
-                    <path d="M 8 0 L 0 0 0 8" fill="none" stroke="gray" stroke-width="0.5" />
-                </pattern>
-                <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
-                    <rect width="80" height="80" fill="url(#smallGrid)" />
-                    <path d="M 80 0 L 0 0 0 80" fill="none" stroke="gray" stroke-width="1" />
+                <pattern id="smallGrid" width="${tileSize.width}" height="${tileSize.height}" patternUnits="userSpaceOnUse">
+                    <path d="M ${tileSize.width} 0 L 0 0 0 ${tileSize.height}" fill="none" stroke="gray" stroke-width="0.5" />
                 </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#smallGrid)" />
         </svg>`;
 
-        var DOMURL = window.URL || window.webkitURL || window;
+        let DOMURL = window.URL || window.webkitURL || window;
         
-        var img = new Image();
-        var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-        var url = DOMURL.createObjectURL(svg);
+        let img = new Image();
+        let svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+        let url = DOMURL.createObjectURL(svg);
         
         img.onload = function () {
             ctx.drawImage(img, 0, 0);
@@ -74,14 +69,12 @@
         return tiles[x+'-'+y];
     }
     const getFillStyle = tile => tile.status === 'DEAD' ? 'black' : 'white'
-    const drawTile = (tile, fillStyle) => {
+    const drawTile = (tile) => {
         ctx.fillStyle = 'black';
-        if (tile.status === 'DEAD') {
-            ctx.clearRect(tile.posX, tile.posY, tileSize.width, tileSize.height);
-        } else {
+        if (tile.status === "ALIVE")
             ctx.fillRect(tile.posX, tile.posY, tileSize.width, tileSize.height);
-        }
-        // drawGrid(ctx, tileSize);
+        else
+            ctx.clearRect(tile.posX, tile.posY, tileSize.width, tileSize.height);
     }
     const toggleTile = tile => {
         tile.status = tile.status === 'DEAD' ? 'ALIVE' : 'DEAD';
@@ -127,21 +120,21 @@
         aliveTiles.forEach(tile => shouldDie(tile) && killNextTurn.push(tile))
         
         killNextTurn.forEach(tile => {
-            drawTile(tile, 'white');
             tile.status = 'DEAD';
+            drawTile(tile);
         });
         birthNextTurn.forEach(tile => {
-            drawTile(tile, 'black');
             tile.status = 'ALIVE';
+            drawTile(tile);
         });
         killNextTurn = [];
         birthNextTurn = [];
         setTimeout(() => {
-            if (loop) startGame();
-        }, 100);
+            if (loop) startGame()
+        }, 275);
     }
     start.addEventListener('click', () => {
         loop = true;
-        startGame()
+        startGame();
     });
 })()
