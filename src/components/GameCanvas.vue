@@ -1,15 +1,15 @@
 <template>
   <canvas
     @mousedown="handleMouseDown"
-    @mousemove="handleMouseMove"
+    @mousemove.prevent="handleMouseMove"
     @mouseup="handdleMouseUp"
-    @click="toggleTile"
+    @click.prevent="toggleTile"
   ></canvas>	
 </template>
 
 <script>
   export default {
-    props: ['tileWidth', 'tileHeight', 'canvasWidth', 'canvasHeight'],
+    props: ['tileWidth', 'tileHeight', 'canvasWidth', 'canvasHeight', 'inGame'],
     data() {
       return {
         ctx: {},
@@ -53,11 +53,12 @@
         this.isDragging = false;
       },
       handleMouseMove(e) {
-        if (! this.isDragging) return
+        if (! this.isDragging || this.inGame) return;
         const { x, y } = this.getCoordinates(e); 
         this.$emit('birthTile', x+'-'+y);
       },
       toggleTile(e) {
+        if (this.inGame) return;
         const { x, y } = this.getCoordinates(e); 
         this.$emit('toggleTile', x+'-'+y);
       },

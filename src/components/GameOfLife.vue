@@ -6,6 +6,7 @@
         :canvasHeight="canvas.height"
         :tileHeight="config.tileSize.width"
         :tileWidth="config.tileSize.height"
+        :inGame="inGame"
         @toggleTile="toggleTile"
         @birthTile="birthTile"
         ref="canvas"
@@ -125,7 +126,7 @@ let component = {
       this.turn++;
       setTimeout(() => {
         if (this.inGame) this.runGame()
-      }, 10);
+      }, 80);
     },
     startGame() {
       this.inGame = true;

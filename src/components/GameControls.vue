@@ -37,12 +37,7 @@
 
 <script>
   export default {
-    props: ['maxToLive', 'minToLive', 'neighborsToBeBorn', 'turn'],
-    data() {
-      return {
-        inGame: false
-      }
-    },
+    props: ['maxToLive', 'minToLive', 'neighborsToBeBorn', 'turn', 'inGame'],
     methods: {
       configChange(key, value) {
         this.$emit('configChange', key, value)
