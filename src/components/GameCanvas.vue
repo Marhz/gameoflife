@@ -1,6 +1,9 @@
 <template>
   <canvas
-    @click="handleClick"
+    @mousedown="handleMouseDown"
+    @mousemove="handleMouseMove"
+    @mouseup="handdleMouseUp"
+    @click="toggleTile"
   ></canvas>	
 </template>
 
@@ -9,7 +12,8 @@
     props: ['tileWidth', 'tileHeight', 'canvasWidth', 'canvasHeight'],
     data() {
       return {
-        ctx: {}  
+        ctx: {},
+        isDragging: false  
       }
     },
     methods: {
@@ -38,23 +42,39 @@
           this.ctx.drawImage(img, 0, 0);
           DOMURL.revokeObjectURL(url);
           this.$el.style.backgroundImage = 'url(' + this.$el.toDataURL('image/svg') + ')'
-          this.ctx.clearRect(0, 0, this.$el.width, this.$el.height);
+          this.clear();
         }
         img.src = url;
       },
-      handleClick(e) {
+      handleMouseDown() {
+        this.isDragging = true;
+      },
+      handdleMouseUp() {
+        this.isDragging = false;
+      },
+      handleMouseMove(e) {
+        if (! this.isDragging) return
+        const { x, y } = this.getCoordinates(e); 
+        this.$emit('birthTile', x+'-'+y);
+      },
+      toggleTile(e) {
+        const { x, y } = this.getCoordinates(e); 
+        this.$emit('toggleTile', x+'-'+y);
+      },
+      getCoordinates(e) {
         const x = Math.floor(e.offsetX / this.tileWidth);
         const y = Math.floor(e.offsetY / this.tileHeight);
-        this.$emit('toggleTile', x+'-'+y);
-        this.drawTile(x, y)
+        return { x, y }; 
       },
-      drawTile(x, y) {
-        let tile = this.$parent.tiles[x+'-'+y];
+      drawTile(tile) {
         this.ctx.fillStyle = 'black';
         if (tile.status === "ALIVE")
             this.ctx.fillRect(tile.posX, tile.posY, this.tileWidth, this.tileHeight);
         else
             this.ctx.clearRect(tile.posX, tile.posY, this.tileWidth, this.tileHeight);
+      },
+      clear() {
+        this.ctx.clearRect(0, 0, this.$el.width, this.$el.height);
       }
     },
     mounted() {

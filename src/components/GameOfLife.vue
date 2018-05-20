@@ -6,13 +6,23 @@
       :tileHeight="config.tileSize.width"
       :tileWidth="config.tileSize.height"
       @toggleTile="toggleTile"
+      @birthTile="birthTile"
       class="left"
       ref="canvas"
     />
     <game-controls
-      class="right"
+      :neighborsToBeBorn="gameConfig.neighborsToBeBorn"
+      :minToLive="gameConfig.minNeighborsToSurvive"
+      :maxToLive="gameConfig.maxNeighborsToSurvive"
+      :inGame="inGame"
+      :turn="turn"
+      @configChange="handleConfigChange"
       @startGame="startGame"
       @stopGame="inGame = false"
+      @reset="reset"
+      @next="next"
+      @prev="prev"
+      class="right"
     />
   </div>
 </template>
@@ -21,7 +31,7 @@
 import GameCanvas from './GameCanvas.vue';
 import GameControls from './GameControls.vue';
 
-export default {
+let component = {
   components: { GameCanvas, GameControls },
   data() {
     return {
@@ -32,8 +42,8 @@ export default {
       },
       config: {
         tileSize: {
-          width: 40,
-          height: 40
+          width: 5,
+          height: 5
         },
       },
       canvas: {
@@ -41,7 +51,9 @@ export default {
         height: 800
       },
       tiles: {},
-      inGame: false
+      inGame: false,
+      turn: 0,
+      undoStack: []
     }
   },
   methods: {
@@ -60,8 +72,15 @@ export default {
         }
       }
     },
+    birthTile(tileId) {
+      let tile = this.tiles[tileId];
+      tile.status = 'ALIVE'; 
+      this.$refs.canvas.drawTile(tile)
+    },
     toggleTile(tileId) {
-      this.tiles[tileId].status = this.tiles[tileId].status === 'DEAD' ? 'ALIVE' : 'DEAD';
+      let tile = this.tiles[tileId];
+      tile.status = tile.status === 'DEAD' ? 'ALIVE' : 'DEAD';
+      this.$refs.canvas.drawTile(tile)
     },
     getAliveNeighbors({x, y}) {
       let aliveNeighbors = 0;
@@ -86,7 +105,6 @@ export default {
     },
     runGame() {
       let tiles = Object.values(this.tiles);
-      console.log(tiles);
       let deadTiles = tiles.filter(tile => tile.status === "DEAD");
       let aliveTiles = tiles.filter(tile => tile.status === "ALIVE");
       let killNextTurn = [];
@@ -95,16 +113,15 @@ export default {
       deadTiles.forEach(tile => this.shouldBeBorn(tile) && birthNextTurn.push(tile))
       aliveTiles.forEach(tile => this.shouldDie(tile) && killNextTurn.push(tile))
       
-      killNextTurn.forEach(tile => {
-        tile.status = 'DEAD';
-        this.$refs.canvas.drawTile(tile.x, tile.y)
-      });
-      birthNextTurn.forEach(tile => {
-        tile.status = 'ALIVE';
-        this.$refs.canvas.drawTile(tile.x, tile.y)
+      killNextTurn.forEach(this.updateStatus('DEAD'));
+      birthNextTurn.forEach(this.updateStatus('ALIVE'));
+      this.undoStack.push({
+        killed: killNextTurn,
+        birthed: birthNextTurn
       });
       killNextTurn = [];
       birthNextTurn = [];
+      this.turn++;
       setTimeout(() => {
         if (this.inGame) this.runGame()
       }, 275);
@@ -113,11 +130,39 @@ export default {
       this.inGame = true;
       this.runGame();
     },
+    handleConfigChange(key, value) {
+      this.gameConfig[key] = +value
+    },
+    reset() {
+      this.inGame = false;
+      this.makeTiles();
+      this.turn = 0;
+      this.$refs.canvas.clear();
+    },
+    next() {
+      if (this.inGame) return;
+      this.runGame();
+    },
+    prev() {
+      if (this.inGame || this.undoStack.length === 0) return;
+      let action = this.undoStack.pop();
+      action.killed.forEach(this.updateStatus('ALIVE'));
+      action.birthed.forEach(this.updateStatus('DEAD'));
+      this.turn--;
+    },
+    updateStatus(status) {
+      return (tile) => {
+        tile.status = status;
+        this.$refs.canvas.drawTile(tile);
+      }
+    },
   },
   mounted() {
     this.makeTiles();
   }
 }
+
+export default component;
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -138,11 +183,18 @@ a {
 }
 .left {
   /* width: 80%; */
+  background: white;
 }
 .right {
+  margin-left: auto;
+  margin-right: auto;
   width: 20%;
 }
 .container {
+  background: #BADA55;
   display: flex;
+}
+* {
+  box-sizing: border-box;
 }
 </style>
