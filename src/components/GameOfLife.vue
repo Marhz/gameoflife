@@ -1,15 +1,16 @@
 <template>
   <div class="container">
-    <game-canvas
-      :canvasWidth="canvas.width"
-      :canvasHeight="canvas.height"
-      :tileHeight="config.tileSize.width"
-      :tileWidth="config.tileSize.height"
-      @toggleTile="toggleTile"
-      @birthTile="birthTile"
-      class="left"
-      ref="canvas"
-    />
+    <div class="left">
+      <game-canvas
+        :canvasWidth="canvas.width"
+        :canvasHeight="canvas.height"
+        :tileHeight="config.tileSize.width"
+        :tileWidth="config.tileSize.height"
+        @toggleTile="toggleTile"
+        @birthTile="birthTile"
+        ref="canvas"
+      />
+    </div>
     <game-controls
       :neighborsToBeBorn="gameConfig.neighborsToBeBorn"
       :minToLive="gameConfig.minNeighborsToSurvive"
@@ -42,13 +43,13 @@ let component = {
       },
       config: {
         tileSize: {
-          width: 5,
-          height: 5
+          width: 8,
+          height: 8
         },
       },
       canvas: {
-        width: 1200,
-        height: 800
+        width: 0,
+        height: 0
       },
       tiles: {},
       inGame: false,
@@ -96,7 +97,7 @@ let component = {
     },
     shouldDie(tile) {
       const aliveNeighbors = this.getAliveNeighbors(tile);
-      let bool = (aliveNeighbors >= this.gameConfig.maxNeighborsToSurvive || aliveNeighbors < this.gameConfig.minNeighborsToSurvive)
+      let bool = (aliveNeighbors >= this.gameConfig.maxNeighborsToSurvive || aliveNeighbors < this.gameConfig.minNeighborsToSurvive)
       return bool 
     },
     shouldBeBorn(tile) {
@@ -124,7 +125,7 @@ let component = {
       this.turn++;
       setTimeout(() => {
         if (this.inGame) this.runGame()
-      }, 275);
+      }, 10);
     },
     startGame() {
       this.inGame = true;
@@ -137,6 +138,7 @@ let component = {
       this.inGame = false;
       this.makeTiles();
       this.turn = 0;
+      this.undoStack = []
       this.$refs.canvas.clear();
     },
     next() {
@@ -157,6 +159,10 @@ let component = {
       }
     },
   },
+  created() {
+    this.canvas.width = window.innerWidth * 70 / 100;
+    this.canvas.height = window.innerHeight;
+  },
   mounted() {
     this.makeTiles();
   }
@@ -166,35 +172,25 @@ export default component;
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+<style>
 .left {
-  /* width: 80%; */
+  /* width: 70%; */
   background: white;
+  height: 100vh;
 }
 .right {
   margin-left: auto;
   margin-right: auto;
   width: 20%;
+  height: 100vh;
 }
 .container {
-  background: #BADA55;
   display: flex;
+  height: 100vh;
+  /* height: 100%; */
 }
-* {
-  box-sizing: border-box;
+body {
+  overflow: hidden;
+  background: #BADA55;
 }
 </style>

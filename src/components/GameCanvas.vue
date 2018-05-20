@@ -17,7 +17,7 @@
       }
     },
     methods: {
-      drawGrid(ctx, tileSize) {
+      drawGrid() {
         this.ctx.strokeStyle = 'black';
         this.ctx.fillStyle = "white";
 
